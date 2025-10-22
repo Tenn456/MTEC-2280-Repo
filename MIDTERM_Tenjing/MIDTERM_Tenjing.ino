@@ -1,17 +1,261 @@
 // Pushbutton Debounce Tutorial: https://www.youtube.com/watch?v=DfKAwrBievM&t=10s
+// Buzzer Pitch and Song Library: https://github.com/hibit-dev/buzzer/tree/master
+
+#include "pitches.h" 
 
 const int ledPin = 9;
+const int ledPin2 = 7;
 const int buttonPin = 4;
+const int buttonPin2 = 15;
+const int buttonPin3 = 16;
 const int potPin = 1;
 const int numReads = 16;
+const int buzzer = 6;
 
 int reading[numReads];
 int count = 0;
+int onSong = 1;
+
+int currentNote = 0;
+unsigned long noteStartTime = 0;
+
+bool songPlaying = false;
+
+int rickRoll[] = {
+  NOTE_A4, REST, NOTE_B4, REST, NOTE_C5, REST, NOTE_A4, REST,
+  NOTE_D5, REST, NOTE_E5, REST, NOTE_D5, REST,
+
+  NOTE_G4, NOTE_A4, NOTE_C5, NOTE_A4, NOTE_E5, NOTE_E5, REST,
+  NOTE_D5, REST,
+
+  NOTE_G4, NOTE_A4, NOTE_C5, NOTE_A4, NOTE_D5, NOTE_D5, REST,
+  NOTE_C5, REST, NOTE_B4, NOTE_A4, REST,
+
+  NOTE_G4, NOTE_A4, NOTE_C5, NOTE_A4, NOTE_C5, NOTE_D5, REST,
+  NOTE_B4, NOTE_A4, NOTE_G4, REST, NOTE_G4, REST, NOTE_D5, REST, NOTE_C5, REST,
+
+  NOTE_G4, NOTE_A4, NOTE_C5, NOTE_A4, NOTE_E5, NOTE_E5, REST,
+  NOTE_D5, REST,
+
+  NOTE_G4, NOTE_A4, NOTE_C5, NOTE_A4, NOTE_G5, NOTE_B4, REST,
+  NOTE_C5, REST, NOTE_B4, NOTE_A4, REST,
+
+  NOTE_G4, NOTE_A4, NOTE_C5, NOTE_A4, NOTE_C5, NOTE_D5, REST,
+  NOTE_B4, NOTE_A4, NOTE_G4, REST, NOTE_G4, REST, NOTE_D5, REST, NOTE_C5, REST,
+
+  NOTE_C5, REST, NOTE_D5, REST, NOTE_G4, REST, NOTE_D5, REST, NOTE_E5, REST,
+  NOTE_G5, NOTE_F5, NOTE_E5, REST,
+
+  NOTE_C5, REST, NOTE_D5, REST, NOTE_G4, REST
+};
+
+int rickRollDurations[] = {
+  8, 8, 8, 8, 8, 8, 8, 4,
+  8, 8, 8, 8, 2, 2,
+
+  8, 8, 8, 8, 2, 8, 8,
+  2, 8,
+
+  8, 8, 8, 8, 2, 8, 8,
+  4, 8, 8, 8, 8,
+
+  8, 8, 8, 8, 2, 8, 8,
+  2, 8, 4, 8, 8, 8, 8, 8, 1, 4,
+
+  8, 8, 8, 8, 2, 8, 8,
+  2, 8,
+
+  8, 8, 8, 8, 2, 8, 8,
+  2, 8, 8, 8, 8,
+
+  8, 8, 8, 8, 2, 8, 8,
+  4, 8, 3, 8, 8, 8, 8, 8, 1, 4,
+
+  2, 6, 2, 6, 4, 4, 2, 6, 2, 3,
+  8, 8, 8, 8,
+
+  2, 6, 2, 6, 2, 1
+};
+
+int mario[] = {
+  NOTE_E5, NOTE_E5, REST, NOTE_E5, REST, NOTE_C5, NOTE_E5,
+  NOTE_G5, REST, NOTE_G4, REST, 
+  NOTE_C5, NOTE_G4, REST, NOTE_E4,
+  NOTE_A4, NOTE_B4, NOTE_AS4, NOTE_A4,
+  NOTE_G4, NOTE_E5, NOTE_G5, NOTE_A5, NOTE_F5, NOTE_G5,
+  REST, NOTE_E5,NOTE_C5, NOTE_D5, NOTE_B4,
+  NOTE_C5, NOTE_G4, REST, NOTE_E4,
+  NOTE_A4, NOTE_B4, NOTE_AS4, NOTE_A4,
+  NOTE_G4, NOTE_E5, NOTE_G5, NOTE_A5, NOTE_F5, NOTE_G5,
+  REST, NOTE_E5,NOTE_C5, NOTE_D5, NOTE_B4,
+  
+  REST, NOTE_G5, NOTE_FS5, NOTE_F5, NOTE_DS5, NOTE_E5,
+  REST, NOTE_GS4, NOTE_A4, NOTE_C4, REST, NOTE_A4, NOTE_C5, NOTE_D5,
+  REST, NOTE_DS5, REST, NOTE_D5,
+  NOTE_C5, REST,
+  
+  REST, NOTE_G5, NOTE_FS5, NOTE_F5, NOTE_DS5, NOTE_E5,
+  REST, NOTE_GS4, NOTE_A4, NOTE_C4, REST, NOTE_A4, NOTE_C5, NOTE_D5,
+  REST, NOTE_DS5, REST, NOTE_D5,
+  NOTE_C5, REST,
+  
+  NOTE_C5, NOTE_C5, NOTE_C5, REST, NOTE_C5, NOTE_D5,
+  NOTE_E5, NOTE_C5, NOTE_A4, NOTE_G4,
+  
+  NOTE_C5, NOTE_C5, NOTE_C5, REST, NOTE_C5, NOTE_D5, NOTE_E5,
+  REST, 
+  NOTE_C5, NOTE_C5, NOTE_C5, REST, NOTE_C5, NOTE_D5,
+  NOTE_E5, NOTE_C5, NOTE_A4, NOTE_G4,
+  NOTE_E5, NOTE_E5, REST, NOTE_E5, REST, NOTE_C5, NOTE_E5,
+  NOTE_G5, REST, NOTE_G4, REST, 
+  NOTE_C5, NOTE_G4, REST, NOTE_E4,
+  
+  NOTE_A4, NOTE_B4, NOTE_AS4, NOTE_A4,
+  NOTE_G4, NOTE_E5, NOTE_G5, NOTE_A5, NOTE_F5, NOTE_G5,
+  REST, NOTE_E5, NOTE_C5, NOTE_D5, NOTE_B4,
+  
+  NOTE_C5, NOTE_G4, REST, NOTE_E4,
+  NOTE_A4, NOTE_B4, NOTE_AS4, NOTE_A4,
+  NOTE_G4, NOTE_E5, NOTE_G5, NOTE_A5, NOTE_F5, NOTE_G5,
+  REST, NOTE_E5, NOTE_C5, NOTE_D5, NOTE_B4,
+  
+  NOTE_E5, NOTE_C5, NOTE_G4, REST, NOTE_GS4,
+  NOTE_A4, NOTE_F5, NOTE_F5, NOTE_A4,
+  NOTE_D5, NOTE_A5, NOTE_A5, NOTE_A5, NOTE_G5, NOTE_F5,
+  
+  NOTE_E5, NOTE_C5, NOTE_A4, NOTE_G4,
+  NOTE_E5, NOTE_C5, NOTE_G4, REST, NOTE_GS4,
+  NOTE_A4, NOTE_F5, NOTE_F5, NOTE_A4,
+  NOTE_B4, NOTE_F5, NOTE_F5, NOTE_F5, NOTE_E5, NOTE_D5,
+  NOTE_C5, NOTE_E4, NOTE_E4, NOTE_C4,
+  
+  NOTE_E5, NOTE_C5, NOTE_G4, REST, NOTE_GS4,
+  NOTE_A4, NOTE_F5, NOTE_F5, NOTE_A4,
+  NOTE_D5, NOTE_A5, NOTE_A5, NOTE_A5, NOTE_G5, NOTE_F5,
+  
+  NOTE_E5, NOTE_C5, NOTE_A4, NOTE_G4,
+  NOTE_E5, NOTE_C5, NOTE_G4, REST, NOTE_GS4,
+  NOTE_A4, NOTE_F5, NOTE_F5, NOTE_A4,
+  NOTE_B4, NOTE_F5, NOTE_F5, NOTE_F5, NOTE_E5, NOTE_D5,
+  NOTE_C5, NOTE_E4, NOTE_E4, NOTE_C4,
+  NOTE_C5, NOTE_C5, NOTE_C5, REST, NOTE_C5, NOTE_D5, NOTE_E5,
+  REST,
+  
+  NOTE_C5, NOTE_C5, NOTE_C5, REST, NOTE_C5, NOTE_D5,
+  NOTE_E5, NOTE_C5, NOTE_A4, NOTE_G4,
+  NOTE_E5, NOTE_E5, REST, NOTE_E5, REST, NOTE_C5, NOTE_E5,
+  NOTE_G5, REST, NOTE_G4, REST, 
+  NOTE_E5, NOTE_C5, NOTE_G4, REST, NOTE_GS4,
+  NOTE_A4, NOTE_F5, NOTE_F5, NOTE_A4,
+  NOTE_D5, NOTE_A5, NOTE_A5, NOTE_A5, NOTE_G5, NOTE_F5,
+  
+  NOTE_E5, NOTE_C5, NOTE_A4, NOTE_G4,
+  NOTE_E5, NOTE_C5, NOTE_G4, REST, NOTE_GS4,
+  NOTE_A4, NOTE_F5, NOTE_F5, NOTE_A4,
+  NOTE_B4, NOTE_F5, NOTE_F5, NOTE_F5, NOTE_E5, NOTE_D5,
+  NOTE_C5, NOTE_E4, NOTE_E4, NOTE_C4,
+  
+  // Game over sound
+  NOTE_C5, NOTE_G4, NOTE_E4,
+  NOTE_A4, NOTE_B4, NOTE_A4, NOTE_GS4, NOTE_AS4, NOTE_GS4,
+  NOTE_G4, NOTE_D4, NOTE_E4
+};
+
+int marioDurations[] = {
+  8, 8, 8, 8, 8, 8, 8,
+  4, 4, 8, 4, 
+  4, 8, 4, 4,
+  4, 4, 8, 4,
+  8, 8, 8, 4, 8, 8,
+  8, 4,8, 8, 4,
+  4, 8, 4, 4,
+  4, 4, 8, 4,
+  8, 8, 8, 4, 8, 8,
+  8, 4,8, 8, 4,
+  
+  
+  4, 8, 8, 8, 4, 8,
+  8, 8, 8, 8, 8, 8, 8, 8,
+  4, 4, 8, 4,
+  2, 2,
+  
+  4, 8, 8, 8, 4, 8,
+  8, 8, 8, 8, 8, 8, 8, 8,
+  4, 4, 8, 4,
+  2, 2,
+  
+  8, 4, 8, 8, 8, 4,
+  8, 4, 8, 2,
+  
+  8, 4, 8, 8, 8, 8, 8,
+  1, 
+  8, 4, 8, 8, 8, 4,
+  8, 4, 8, 2,
+  8, 8, 8, 8, 8, 8, 4,
+  4, 4, 4, 4, 
+  4, 8, 4, 4,
+  
+  4, 4, 8, 4,
+  8, 8, 8, 4, 8, 8,
+  8, 4, 8, 8, 4,
+  
+  4, 8, 4, 4,
+  4, 4, 8, 4,
+  8, 8, 8, 4, 8, 8,
+  8, 4, 8, 8, 4,
+  
+  8, 4, 8, 4, 4,
+  8, 4, 8, 2,
+  8, 8, 8, 8, 8, 8,
+  
+  8, 4, 8, 2,
+  8, 4, 8, 4, 4,
+  8, 4, 8, 2,
+  8, 4, 8, 8, 8, 8,
+  8, 4, 8, 2,
+  
+  8, 4, 8, 4, 4,
+  8, 4, 8, 2,
+  8, 8, 8, 8, 8, 8,
+  
+  8, 4, 8, 2,
+  8, 4, 8, 4, 4,
+  8, 4, 8, 2,
+  8, 4, 8, 8, 8, 8,
+  8, 4, 8, 2,
+  8, 4, 8, 8, 8, 8, 8,
+  1,
+  
+  8, 4, 8, 8, 8, 4,
+  8, 4, 8, 2,
+  8, 8, 8, 8, 8, 8, 4,
+  4, 4, 4, 4, 
+  8, 4, 8, 4, 4,
+  8, 4, 8, 2,
+  8, 8, 8, 8, 8, 8,
+  
+  8, 4, 8, 2,
+  8, 4, 8, 4, 4,
+  8, 4, 8, 2,
+  8, 4, 8, 8, 8, 8,
+  8, 4, 8, 2,
+  
+  //game over sound
+  4, 4, 4,
+  8, 8, 8, 8, 8, 8,
+  8, 8, 2
+};
 
 bool lastButtonState;
+bool lastButtonState2;
+bool lastButtonState3;
 bool onState;
 
+int size = sizeof(rickRoll) / sizeof(int);
+
 unsigned long lastTimeButtonStateChanged = millis();
+unsigned long lastTimeButtonStateChanged2 = millis();\
+unsigned long lastTimeButtonStateChanged3 = millis();
 unsigned long debounceDuration = 50;
 
 void setup() {
@@ -19,10 +263,15 @@ void setup() {
   analogReadResolution(11); //reduce the ADC bit depth to 11-bit
   Serial.begin(115200);
   pinMode(ledPin, OUTPUT);
+  pinMode(ledPin2, OUTPUT);
   pinMode(buttonPin, INPUT_PULLUP);
+  pinMode(buttonPin2, INPUT_PULLUP);
+  pinMode(buttonPin3, INPUT_PULLUP);
+  pinMode(buzzer, OUTPUT);
 }
 
 void loop() {
+  // On Button
   if (millis() - lastTimeButtonStateChanged >= debounceDuration)
   {
     bool buttonState = digitalRead(buttonPin);
@@ -33,7 +282,6 @@ void loop() {
       if (buttonState == LOW) 
       {
        onState = !onState;
-       Serial.println("Pressed");
       }
     }
   }
@@ -58,16 +306,147 @@ void loop() {
   //map(input value, input low, input high, output low, output high)
   int mapVal = map(analogValue, 0, 2047, 20, 255);   //use map() to scale value to 0-255 range
 
+  int mapVal2 = map(analogValue, 0, 2047, 1000, 5000); // for buzzer
+
   // if project is ON
   if (onState)
   {
     analogWrite(ledPin, mapVal);
+
+    if (millis() - lastTimeButtonStateChanged2 >= debounceDuration)
+    {
+      bool buttonState2 = digitalRead(buttonPin2);
+      if (buttonState2 != lastButtonState2)
+      {
+        lastTimeButtonStateChanged2 = millis();
+        lastButtonState2 = buttonState2;
+        if (buttonState2 == LOW) 
+        {
+          songPlaying = false;
+          onSong = 1;
+          initializeSong();
+        }
+      }
+    }
+
+    if (millis() - lastTimeButtonStateChanged3 >= debounceDuration)
+    {
+      bool buttonState3 = digitalRead(buttonPin3);
+      if (buttonState3 != lastButtonState3)
+      {
+        lastTimeButtonStateChanged3 = millis();
+        lastButtonState3 = buttonState3;
+        if (buttonState3 == LOW) 
+        {
+          songPlaying = false;
+          onSong = 2;
+          initializeSong();
+        }
+      }
+    }
+    
+    playSong();
   }
-  // if project is OFF
-  else
+  else // if project is OFF
   {
     analogWrite(ledPin, 0);
+    digitalWrite(ledPin2, LOW);
+    noTone(buzzer);
+    songPlaying = false;
   }
 
-  Serial.printf("ADC raw = %i \t ADC averaged = %i \t ADC mapped = %i \n", analogRead(potPin), analogValue, mapVal); 
+  //Serial.printf("ADC raw = %i \t ADC averaged = %i \t ADC mapped = %i \n", analogRead(potPin), analogValue, mapVal); 
+}
+
+void initializeSong() {
+  currentNote = 0; // Reset song
+  songPlaying = true;
+  noteStartTime = millis();
+  playNote(currentNote);
+}
+
+void playNote(int index) {
+  if (onSong == 1)
+  {
+    int duration = 1000 / rickRollDurations[index];
+    tone(buzzer, rickRoll[index], duration);
+
+    // If current note doesn not play sound, LED stays off
+    if (rickRoll[index] != REST){
+      digitalWrite(ledPin2, HIGH);
+    }
+  }
+  else if (onSong == 2)
+  {
+    int duration = 1000 / marioDurations[index];
+    tone(buzzer, mario[index], duration);
+
+    // If current note doesn not play sound, LED stays off
+    if (mario[index] != REST){
+      digitalWrite(ledPin2, HIGH);
+    }
+  }
+
+  noteStartTime = millis();
+
+  
+}
+
+void playSong() {
+  if (!songPlaying) return;
+
+  unsigned long currentTime = millis();
+
+  if (onSong == 1) 
+  {
+    int duration = 1000 / rickRollDurations[currentNote];
+    int pause = duration * 1.3; // The inbetween time between notes (Grabbed pause time value from library)
+
+    if (currentTime - noteStartTime >= duration) {
+      // Turns LED off after note finishes playing
+      digitalWrite(ledPin2, LOW);
+    }
+
+    // Waits for the pause to finish before playing new note
+    if (currentTime - noteStartTime >= pause) {
+      currentNote++;
+
+      if (currentNote < size) {
+        // Play next note
+        playNote(currentNote);
+      } else {
+        // If reached the end of the song
+        noTone(buzzer);
+        songPlaying = false; // Done
+        Serial.println("Song finished!");
+      }
+    }
+  }
+  else if (onSong == 2) 
+  {
+    int duration = 1000 / marioDurations[currentNote];
+    int pause = duration * 1.5; // The inbetween time between notes (Adjusted to my liking)
+
+    if (currentTime - noteStartTime >= duration) {
+      // Turns LED off after note finishes playing
+      digitalWrite(ledPin2, LOW);
+    }
+
+    // Waits for the pause to finish before playing new note
+    if (currentTime - noteStartTime >= pause) {
+      currentNote++;
+
+      if (currentNote < size) {\
+        // Play next note
+        playNote(currentNote);
+      } else {
+        // If reached the end of the song
+        noTone(buzzer);
+        songPlaying = false;
+        Serial.println("Song finished!");
+      }
+    }
+  }
+  
+
 }
