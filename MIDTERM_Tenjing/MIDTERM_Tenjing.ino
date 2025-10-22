@@ -15,6 +15,7 @@ const int buzzer = 6;
 int reading[numReads];
 int count = 0;
 int onSong = 1;
+int mapVal2;
 
 int currentNote = 0;
 unsigned long noteStartTime = 0;
@@ -289,24 +290,23 @@ void loop() {
   reading[count] = analogRead(potPin); //store current ADC read in array at index of count
   count++;
 
-  if (count >= numReads)  //if count is greater than or equal to number of reads...
+  if (count >= numReads)  // if count is greater than or equal to number of reads
   {
-    count = 0;    //...reset count
+    count = 0; // reset count
   }
 
-  int sum = 0;    //declare empty sum variable
+  int sum = 0; // declare empty sum variable
 
-  for (int i = 0; i < numReads; i++)  //for every reading in array...
+  for (int i = 0; i < numReads; i++) //for every reading in array
   {
-    sum += reading[i];  //add all the readings up and store in sum
+    sum += reading[i]; //add all the readings up and store in sum
   }
 
   int analogValue = sum / numReads; //calculate average reading and store in analogValue
   
-  //map(input value, input low, input high, output low, output high)
-  int mapVal = map(analogValue, 0, 2047, 20, 255);   //use map() to scale value to 0-255 range
+  int mapVal = map(analogValue, 2047, 0, 20, 255); //use map() to scale value to 0-255 range
 
-  int mapVal2 = map(analogValue, 0, 2047, 1000, 5000); // for buzzer
+  mapVal2 = map(analogValue, 0, 2047, 1, 3); // for buzzer
 
   // if project is ON
   if (onState)
@@ -400,7 +400,7 @@ void playSong() {
   if (onSong == 1) 
   {
     int duration = 1000 / rickRollDurations[currentNote];
-    int pause = duration * 1.3; // The inbetween time between notes (Grabbed pause time value from library)
+    int pause = duration * mapVal2; // The inbetween time between notes, dependent on pot
 
     if (currentTime - noteStartTime >= duration) {
       // Turns LED off after note finishes playing
@@ -425,7 +425,7 @@ void playSong() {
   else if (onSong == 2) 
   {
     int duration = 1000 / marioDurations[currentNote];
-    int pause = duration * 1.5; // The inbetween time between notes (Adjusted to my liking)
+    int pause = duration * mapVal2; // The inbetween time between notes, dependent on pot
 
     if (currentTime - noteStartTime >= duration) {
       // Turns LED off after note finishes playing
