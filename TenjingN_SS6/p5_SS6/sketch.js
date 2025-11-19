@@ -4,11 +4,9 @@ let options = { baudRate: 9600}; // change the baud rate to match your Arduino c
 
 let rxFlag = false; // flag to indicate when new data has been received
 let firstContact = false; // flag to indicate when the first contact has been made with the serial port
-let sensors = [0, 0, 0, 0]; // declare array to hold incoming sensor data, and initialize with zeros
+let sensors = [0, 0]; // declare array to hold incoming sensor data, and initialize with zeros
 let pot1 = 0; // variable to hold potentiometer value
 let button1 = 0; // variable to hold button value
-let button2 = 0; // variable to hold button value
-let posX = 0;
 
 let bullets = [];
 
@@ -52,45 +50,10 @@ function draw()
   }
   else  //if we have established contact with the serial port, start game
   {
-    // //potentiometer indicator outlines
-    // fill(pot1);
-    // rect(width/8, height/4, 60, 255);
-    // fill(pot2);
-    // rect(width - width/4, height/4, 60, 255);
-
-    // //potentiometer indicators
-    // fill(0, pot1, 0);
-    // rect(width/8, height/4, 60, pot1);
-    // fill(pot2, 0, 0);
-    // rect(width - width/4, height/4, 60, pot2);
-
-    // //button indicators
-    // fill(button1);
-    // rect(width/2 - 100, height/4, 50, 50);
-    // fill(button2);
-    // rect(width/2 + 50, height/4, 50, 50);
-
-    // //pause button
-    // fill(200);
-    // circle(width/2, height/2, 140);
-
-    // if (rxFlag) // if rxFlag is true, we are receiving data, so...
-    // {
-    //   fill(0);
-    //   noStroke();
-    //   text("PAUSE RX", width/2, height/2);  // display "PAUSE RX" on the button
-    // }
-    // else  //if rxFlag is false, we are not receiving data, so...
-    // {
-    //   fill(255, 0, 0 );
-    //   noStroke();
-    //   text("PAUSED", width/2, height/2);  //display "PAUSED" on the button
-    // }
-
     // If button is pressed...
     if (button1 > 0) {
       // Create a bullet
-      bullets.push(new Bullet(pot1 + 25, 400, 5))
+      bullets.push(new Bullet(pot1 + 25, 400, 5));
     }
 
     // If bullets exist...
@@ -168,21 +131,18 @@ function serialEvent() // gets called when new serial data arrives
       print("Rx String: " + inString); // print the incoming string to the console
       sensors = split(inString, ','); // split the string into an array of sensor values
     
-      if(sensors.length >= 3) // check if we have all 3 sensor values before trying to access them
+      if(sensors.length >= 2) // check if we have all 3 sensor values before trying to access them
       {
         print(sensors); // print the array of sensor values to the console
 
         button1 = Number(sensors[0]); // convert the first sensor value to an integer
         button1 = map(button1, 0, 1, 0, 255); // map the button value from boolean true/false to 0-255
-
-        button2 = Number(sensors[1]); // convert the second sensor value to an integer
-        button2 = map(button2, 0, 1, 0, 255); // map the button value from boolean true/false to 0-255
         
-        pot1 = Number(sensors[2]); // convert the third sensor value to an integer
+        pot1 = Number(sensors[1]); // convert the second sensor value to an integer
         pot1 = map(pot1, 0, 1023, 450, 0);
         pot1 = floor(pot1); // round the potentiometer value to an integer
         
-        print("Button 1: " + button1 + " Button 2: " + button2 + " Pot 1: " + pot1);  //print mapped sensor values to the console
+        print("Button 1: " + button1 + " Pot 1: " + pot1);  //print mapped sensor values to the console
 
         //now that we're done processing the incoming data, we can "call out" to our microcontroller, which respond with latest sensor data.
         serial.write('A');  // send 'A' to the serial port to indicate that we want the latest sensor data
@@ -223,8 +183,9 @@ class Bullet {
   }
 
   update() {
-    this.y -= this.speed;
+    this.y -= this.speed; // move upwards
 
+    // If offscreen...
     if (this.y < -10) {
       this.off = true;
     }

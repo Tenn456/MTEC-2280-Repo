@@ -1,10 +1,8 @@
 const int adcPin_1 = 1;
 const int buttonPin_1 = 41;
-const int buttonPin_2 = 42;
 const int ledPin = 4;
 
 bool buttonState_1 = 0;
-bool buttonState_2 = 0;
 
 int adcRead_1 = 0;
 int inByte = 0;
@@ -12,7 +10,6 @@ int inByte = 0;
 void setup() 
 {
   pinMode(buttonPin_1, INPUT_PULLUP);
-  pinMode(buttonPin_2, INPUT_PULLUP);
   pinMode(ledPin, OUTPUT);
   digitalWrite(ledPin, 0);
   analogReadResolution(10); //set ADC from 0 to 1023 range
@@ -29,10 +26,7 @@ void loop()
       digitalWrite(ledPin, 1);  //turn LED ON
       adcRead_1 = analogRead(adcPin_1); //read pot 1
       buttonState_1 = !digitalRead(buttonPin_1);  //read button 1
-      buttonState_2 = !digitalRead(buttonPin_2);  //read button 2
       Serial.print(buttonState_1);  //send 1st value
-      Serial.print(',');            //send comma ASCII char to separate values
-      Serial.print(buttonState_2);  //send 2nd value
       Serial.print(',');            //send comma ASCII char to separate values
       Serial.print(adcRead_1);      //send 3rd value
       Serial.print('\n');           //send newline ASCII char to frame end of message
