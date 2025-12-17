@@ -2,9 +2,9 @@ class Button {
 	constructor(x, y, tag) {
 		this.x = x;
 		this.y = y;
-        this.width = 450;
-        this.height = 150;
-        this.tag = tag;
+    this.width = 450;
+    this.height = 150;
+    this.tag = tag;
 	}
 
     display() {
@@ -12,13 +12,13 @@ class Button {
         
         // If mouse is hovering button...
         if(mouseX > this.x && mouseX < this.x + this.width && mouseY > this.y && mouseY < this.y +this.height) {
-            print("Over");
+          print("Over");
+          fill(200, 75);
         }
         else {
-            fill(255);
+          noFill();
         }
-        
-        noFill();
+
         stroke(255);
         rect(this.x, this.y, this.width, this.height, 10);
         pop();
