@@ -11,6 +11,19 @@ let marioImg;
 let rickImg;
 let pirateImg;
 let tetrisImg;
+let brunoImg;
+
+let rickGif;
+let marioGif;
+let pirateGif;
+let tetrisGif;
+
+
+let firstRoll = true;
+let playingRoll = false;
+let playingMario = false;
+let playingPirate = false;
+let playingTetris = false;
 
 let inData;
 
@@ -46,11 +59,41 @@ function setup()
   rickImg = loadImage('rick.jpg');
   pirateImg = loadImage('pirate.jpg');
   tetrisImg = loadImage('tetris.jpg');
+  rickGif = loadImage('rickroll.gif');
+  brunoImg = loadImage('bruno.jpg');
+  marioGif = loadImage('marioLevel.gif');
+  pirateGif = loadImage('pirateZoom.gif');
+  tetrisGif = loadImage('tetrisGame.gif');
 }
 
 function draw() 
 {
   background(0);
+
+  if (playingRoll) {
+    push();
+    imageMode(CENTER);
+    image(rickGif, width/2, height/2, 950, 700);
+    pop();
+  }
+  else if (playingMario) {
+    push();
+    imageMode(CENTER);
+    image(marioGif, width/2, height/2, 950, 700);
+    pop();
+  }
+  else if (playingPirate) {
+    push();
+    imageMode(CENTER);
+    image(pirateGif, width/2, height/2, 950, 700);
+    pop();
+  }
+  else if (playingTetris) {
+    push();
+    imageMode(CENTER);
+    image(tetrisGif, width/2, height/2, 950, 700);
+    pop();
+  }
 
   for (let p of particles) {
     p.update();
@@ -79,11 +122,34 @@ function mousePressed() //when a key is pressed...
     console.log("Button clicked");
     newColor = color(255, 171, 217, 100);
 
+    if (firstRoll) {
+      playingRoll = true;
+      firstRoll = false;
+      playingMario = false;
+      playingPirate = false;
+      playingTetris = false;
+    }
+
+    if (!playingRoll) {
+      playingRoll = true;
+      playingMario = false;
+      playingPirate = false;
+      playingTetris = false;
+    }
+
+
     serial.write('A');
   }
   else if (mouseX > 525 && mouseX < 525 + 450 && mouseY > 200 && mouseY < 200 + 150) {
     console.log("Button 2 clicked");
     newColor = color(255, 0, 0, 100);
+
+    if (!playingMario) {
+      playingMario = true;
+      playingRoll = false;
+      playingPirate = false;
+      playingTetris = false;
+    }
 
     serial.write('B');
   }
@@ -91,16 +157,30 @@ function mousePressed() //when a key is pressed...
     console.log("Button 3 clicked");
     newColor = color(0, 51, 255, 100);
 
+    if (!playingPirate) {
+      playingPirate = true;
+      playingRoll = false;
+      playingMario = false;
+      playingTetris = false;
+    }
+
     serial.write('C');
   }
   else if (mouseX > 525 && mouseX < 525 + 450 && mouseY > 400 && mouseY < 400 + 150) {
     console.log("Button 4 clicked");
     newColor = color(255, 194, 89, 100);
 
+    if (!playingTetris) {
+      playingTetris = true;
+      playingRoll = false;
+      playingMario = false;
+      playingPirate = false;
+    }
+
     serial.write('D');
   }
 
-  // Tell each particle to lerp toward it
+  // Tell each particle to lerp toward color
   for (let p of particles) {
     p.setTargetColor(newColor);
   }

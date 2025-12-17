@@ -27,10 +27,18 @@ class Button {
         fill(255);
         textSize(24);
         if (this.tag == 1) {
+          if (firstRoll) {
+            image(brunoImg, this.x + 10, this.y + 25, 100, 100);
+            text("Uptown Funk", this.x + 120, this.y + 70);
+            textSize(15);
+            text("Mark Ronson ft. Bruno Mars", this.x + 120, this.y + 90);
+          }
+          else {
             image(rickImg, this.x + 10, this.y + 25, 100, 100);
             text("Never Gonna Give You Up", this.x + 120, this.y + 70);
             textSize(15);
             text("Rick Astley", this.x + 120, this.y + 90);
+          }
         }
         else if (this.tag == 2) {
             image(marioImg, this.x + 10, this.y + 25, 100, 100);
@@ -89,11 +97,8 @@ class Particle {
       }
     }
 
-    
-
     // Rise
     this.y -= this.speed / this.potValue;
-    print(this.potValue);
     // Wobble
     this.x += map(noise(this.xOffset), 0, 1, -1.5, 1.5);
     this.xOffset += 0.01;
