@@ -16,6 +16,7 @@ int reading[numReads];
 int count = 0;
 int onSong = 1;
 int mapVal2;
+int mapValLast;
 
 int currentNote = 0;
 unsigned long noteStartTime = 0;
@@ -527,10 +528,13 @@ void loop() {
   }
 
   int analogValue = sum / numReads; //calculate average reading and store in analogValue
-  
-  int mapVal = map(analogValue, 2047, 0, 20, 255); //use map() to scale value to 0-255 range
 
   mapVal2 = map(analogValue, 0, 2047, 1, 3); // for buzzer
+
+  if (mapValLast != mapVal2) {
+    Serial.write(mapVal2);
+    mapValLast = mapVal2;
+  }
 
   //Serial.printf("ADC raw = %i \t ADC averaged = %i \t ADC mapped = %i \n", analogRead(potPin), analogValue, mapVal); 
 }

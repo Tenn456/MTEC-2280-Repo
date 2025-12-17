@@ -12,7 +12,7 @@ class Button {
         
         // If mouse is hovering button...
         if(mouseX > this.x && mouseX < this.x + this.width && mouseY > this.y && mouseY < this.y +this.height) {
-          print("Over");
+          //print("Over");
           fill(200, 75);
         }
         else {
@@ -63,6 +63,7 @@ class Particle {
     this.startCol = this.col;
     this.targetCol = this.col;
     this.lerpAmt = 1;
+    this.potValue = 1;
   }
 
   reset() {
@@ -80,8 +81,19 @@ class Particle {
   }
 
   update() {
+    if (inData) {
+      if (inData < 4 && inData > 0) {
+        if (this.potValue != inData) {
+          this.potValue = inData;
+        }
+      }
+    }
+
+    
+
     // Rise
-    this.y -= this.speed;
+    this.y -= this.speed / this.potValue;
+    print(this.potValue);
     // Wobble
     this.x += map(noise(this.xOffset), 0, 1, -1.5, 1.5);
     this.xOffset += 0.01;

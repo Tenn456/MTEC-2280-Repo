@@ -12,6 +12,8 @@ let rickImg;
 let pirateImg;
 let tetrisImg;
 
+let inData;
+
 let particles = [];
 
 function setup() 
@@ -125,7 +127,10 @@ function printList(portList) // gets called when the serial.list() function is c
 
 function serialEvent() // gets called when new serial data arrives
 {
-  //only sending data to microcontroller in this sketch, so not being used
+  //print(inData);
+
+  inData = Number(serial.read());
+
 }
 
 function serialError(err) //gets called when there's an error
